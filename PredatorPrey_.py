@@ -7,11 +7,13 @@ import enum
 import random
 import math
 
+#creates a class to represent each location which may contain a warren or fox
 class Location:
     def __init__(self):
         self.Fox = None
         self.Warren = None
 
+#creates a class for universe in which the simulation takes place
 class Simulation:
     def __init__(self, LandscapeSize, InitialWarrenCount, InitialFoxCount, Variability, FixedInitialLocations):
         self.__ViewRabbits = ""
@@ -22,6 +24,7 @@ class Simulation:
         self.__LandscapeSize = LandscapeSize
         self.__Variability = Variability
         self.__FixedInitialLocations = FixedInitialLocations
+        # creates the 2d array grid for the landscape and populates with empty locations
         self.__Landscape = []
         for Count1 in range(self.__LandscapeSize):
             LandscapeRow = []
@@ -32,6 +35,7 @@ class Simulation:
         self.__CreateLandscapeAndAnimals(InitialWarrenCount, InitialFoxCount, self.__FixedInitialLocations)
         self.__DrawLandscape()
         MenuOption = 0
+        #keeps the simulation running until there are no more foxes or warrens or the user selects to exit
         while (self.__WarrenCount > 0 or self.__FoxCount > 0) and MenuOption != 5:
             print()
             print("1. Advance to next time period showing detail")
@@ -40,6 +44,7 @@ class Simulation:
             print("4. Inspect warren")
             print("5. Exit")
             print()
+            #takes the users menu option selection and calls the appropriate method
             MenuOption = int(input("Select option: "))
             if MenuOption == 1:
                 self.__TimePeriod += 1
@@ -63,17 +68,21 @@ class Simulation:
                     if self.__ViewRabbits == "y":
                         self.__Landscape[x][y].Warren.ListRabbits()
         input()
-
+    #takes the coordinate input from the user and returns it for use in other methods
     def __InputCoordinate(self, CoordinateName):
         Coordinate = int(input("  Input " + CoordinateName + " coordinate:"))
         return Coordinate
 
+    #when the user selects to advance the time period this method 
+    #is called to carry out all the necessary changes to the landscape
+    # and animals for the new time period
     def __AdvanceTimePeriod(self):
         NewFoxCount = 0
         if self.__ShowDetail:
             print()
         for x in range(0, self.__LandscapeSize):
             for y in range(0, self.__LandscapeSize):
+                #checks if there is a warren at the given location
                 if not self.__Landscape[x][y].Warren is None:
                     if self.__ShowDetail:
                         print("Warren at (", x, ",", y, "):", sep="")
@@ -91,12 +100,15 @@ class Simulation:
                     if self.__Landscape[x][y].Warren.WarrenHasDiedOut():
                         self.__Landscape[x][y].Warren = None
                         self.__WarrenCount -= 1
+
+        #advances the generation of each fox and checks if it has died or reproduced
         for x in range(0, self.__LandscapeSize):
             for y in range(0, self.__LandscapeSize):
                 if not self.__Landscape[x][y].Fox is None:
                     if self.__ShowDetail:
                         print("Fox at (", x, ",", y, "): ", sep="")
                     self.__Landscape[x][y].Fox.AdvanceGeneration(self.__ShowDetail)
+                    #if the fox has died then it is removed from the landscape and the fox count is reduced
                     if self.__Landscape[x][y].Fox.CheckIfDead():
                         self.__Landscape[x][y].Fox = None
                         self.__FoxCount -= 1
@@ -118,10 +130,15 @@ class Simulation:
         self.__DrawLandscape()
         print()
 
+    #this method is called when the simulation is first created to populate the landscape with the initial warrens and foxes
     def __CreateLandscapeAndAnimals(self, InitialWarrenCount, InitialFoxCount, FixedInitialLocations):
         for x in range(0, self.__LandscapeSize):
             for y in range(0, self.__LandscapeSize):
                 self.__Landscape[x][y] = Location()
+
+        #if the user has selected to have fixed initial locations then the warrens and foxes
+        #are created in predetermined locations otherwise they are created in random locations
+
         if FixedInitialLocations:
             self.__Landscape[1][1].Warren = Warren(self.__Variability, 38)
             self.__Landscape[2][8].Warren = Warren(self.__Variability, 80)
@@ -141,6 +158,7 @@ class Simulation:
             for f in range(0, InitialFoxCount):
                 self.__CreateNewFox()
 
+    #creates a new warren in a random location on the landscape that does not already contain a warren
     def __CreateNewWarren(self):
         x = random.randint(0, self.__LandscapeSize - 1)
         y = random.randint(0, self.__LandscapeSize - 1)
@@ -152,6 +170,7 @@ class Simulation:
         self.__Landscape[x][y].Warren = Warren(self.__Variability)
         self.__WarrenCount += 1
 
+    #creates a new fox in a random location on the landscape that does not already contain a fox
     def __CreateNewFox(self):
         x = random.randint(0, self.__LandscapeSize - 1)
         y = random.randint(0, self.__LandscapeSize - 1)
@@ -163,6 +182,7 @@ class Simulation:
         self.__Landscape[x][y].Fox = Fox(self.__Variability)
         self.__FoxCount += 1
 
+    #allows the foxes to eat rabbits in a warren based on how many rabbits there are and how close the fox is to the warren
     def __FoxesEatRabbitsInWarren(self, WarrenX, WarrenY):
         RabbitCountAtStartOfPeriod = self.__Landscape[WarrenX][WarrenY].Warren.GetRabbitCount()
         for FoxX in range(0, self.__LandscapeSize):
@@ -181,9 +201,11 @@ class Simulation:
                     if self.__ShowDetail:
                         print("  ", FoodConsumed, " rabbits eaten by fox at (", FoxX, ",", FoxY, ").", sep="")
 
+    #calculates the distance between two points on the landscape 
     def __DistanceBetween(self, x1, y1, x2, y2):
         return math.sqrt((pow(x1 - x2, 2) + pow(y1 - y2, 2)))
 
+    #draws the 2d grid showing the location of the warrens and foxes and the number of rabbits in each warren
     def __DrawLandscape(self):
         print()
         print("TIME PERIOD:", self.__TimePeriod)
@@ -215,6 +237,8 @@ class Simulation:
                 print("|", end="")
             print()
 
+#creates a class to represent a warren which contains rabbits and has methods to age the rabbits
+#allow them to reproduce, and be eaten by foxes
 class Warren:
     def __init__(self, Variability, RabbitCount=0):
         self.__MAX_RABBITS_IN_WARREN = 99
@@ -230,6 +254,8 @@ class Warren:
         for r in range(0, self.__RabbitCount):
             self.__Rabbits[r] = Rabbit(self.__Variability)
 
+    #creates a random value based on the base value and the variability
+    #percentage to allow for differences in the rabbits and foxes created
     def __CalculateRandomValue(self, BaseValue, Variability):
         return BaseValue - (BaseValue * Variability / 100) + (BaseValue * random.randint(0, Variability * 2) / 100)
 
@@ -261,6 +287,8 @@ class Warren:
         if self.__RabbitCount == 0 and ShowDetail:
             print("  All rabbits in warren are dead")
 
+
+    #method handles the foxes eating rabbits in the warren based on how many rabbits are available
     def EatRabbits(self, RabbitsToEat):
         DeathCount = 0
         if RabbitsToEat > self.__RabbitCount:
@@ -273,6 +301,8 @@ class Warren:
         self.__CompressRabbitList(DeathCount)
         return RabbitsToEat
 
+
+    #other factors that kill rabbits.
     def __KillByOtherFactors(self, ShowDetail):
         DeathCount = 0
         for r in range(0, self.__RabbitCount):
@@ -283,6 +313,7 @@ class Warren:
         if ShowDetail:
             print(" ", DeathCount, "rabbits killed by other factors.")
 
+    #ages the rabbits and checks if they have died of old age
     def __AgeRabbits(self, ShowDetail):
         DeathCount = 0
         for r in range(0, self.__RabbitCount):
@@ -294,6 +325,7 @@ class Warren:
         if ShowDetail:
             print(" ", DeathCount, "rabbits die of old age.")
 
+    #mates the rabbits in the warren based on their reproduction rates and creates new rabbits if necessary
     def __MateRabbits(self, ShowDetail):
         Mate = 0
         Babies = 0
@@ -310,6 +342,8 @@ class Warren:
         if ShowDetail:
             print(" ", Babies, "baby rabbits born.")
 
+
+    #compresses the list of rabbits to remove the None values when rabbits have died and reduces the rabbit count accordingly
     def __CompressRabbitList(self, DeathCount):
         if DeathCount > 0:
             ShiftTo = 0
@@ -338,6 +372,9 @@ class Warren:
             for r in range(0, self.__RabbitCount):
                 self.__Rabbits[r].Inspect()
 
+
+#creates a class to represent the rabbits and foxes in the simulation with methods to age them
+#checks if they have died and reproduce if necessary
 class Animal:
     _ID = 1
 
@@ -373,6 +410,9 @@ class Animal:
     def _CalculateRandomValue(self, BaseValue, Variability):
         return BaseValue - (BaseValue * Variability / 100) + (BaseValue * random.randint(0, Variability * 2) / 100)
 
+
+#creates a class to represent the foxes in the simulation with methods to age them
+#checks if they have died reproduce and eat rabbits
 class Fox(Animal):
     def __init__(self, Variability):
         self.__DEFAULT_LIFE_SPAN = 7
@@ -424,6 +464,8 @@ class Genders(enum.Enum):
     Male = 1
     Female = 2
 
+
+#creates a class to represent the rabbits in the simulation with methods to age them
 class Rabbit(Animal):
     def __init__(self, Variability, ParentsReproductionRate=1.2):
         self.__DEFAULT_LIFE_SPAN = 4
@@ -452,6 +494,8 @@ class Rabbit(Animal):
     def GetReproductionRate(self):
         return self.__ReproductionRate
 
+
+#main method to run the simulation and display the main menu to the user to select the default or custom settings for the simulation
 def Main():
     MenuOption = 0
     while MenuOption != 3:
