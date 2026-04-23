@@ -38,6 +38,7 @@ class Simulation:
         #keeps the simulation running until there are no more foxes or warrens or the user selects to exit
         while (self.__WarrenCount > 0 or self.__FoxCount > 0) and MenuOption != 5:
             print()
+            print("0. Advance 10 time periods hiding detail")
             print("1. Advance to next time period showing detail")
             print("2. Advance to next time period hiding detail")
             print("3. Inspect fox")
@@ -46,6 +47,13 @@ class Simulation:
             print()
             #takes the users menu option selection and calls the appropriate method
             MenuOption = int(input("Select option: "))
+            if MenuOption == 0:
+
+                self.__TimePeriod += 10
+                self.show__detail = False
+                for i in range(10):
+                    self.__AdvanceTimePeriod()
+                    
             if MenuOption == 1:
                 self.__TimePeriod += 1
                 self.__ShowDetail = True
@@ -262,6 +270,7 @@ class Warren:
     def GetRabbitCount(self):
         return self.__RabbitCount
 
+    #creates a new warren if the number of rabbits in it is at its maximum capacity
     def NeedToCreateNewWarren(self):
         if self.__RabbitCount == self.__MAX_RABBITS_IN_WARREN and not self.__AlreadySpread:
             self.__AlreadySpread = True
@@ -395,10 +404,11 @@ class Animal:
         return not self._IsAlive
 
     def Inspect(self):
-        print("  ID", self._ID, "", end="")
+        print("ID", self._ID, "", end="")
         print("Age", self._Age, "", end="")
         print("LS", self._NaturalLifespan, "", end="")
         print("Pr dth", round(self._ProbabilityOfDeathOtherCauses, 2), "", end="")
+
 
     def CheckIfKilledByOtherFactor(self):
         if random.randint(0, 100) < self._ProbabilityOfDeathOtherCauses * 100:
@@ -420,6 +430,10 @@ class Fox(Animal):
         super(Fox, self).__init__(self.__DEFAULT_LIFE_SPAN, self.__DEFAULT_PROBABILITY_DEATH_OTHER_CAUSES, Variability)
         self.__FoodUnitsNeeded = int(10 * self._CalculateRandomValue(100, Variability) / 100)
         self.__FoodUnitsConsumedThisPeriod = 0
+        if random.randint(0, 100) < 33:
+            self.__Gender = Genders.Male
+        else:
+            self.__Gender = Genders.Female
 
     def AdvanceGeneration(self, ShowDetail):
         if self.__FoodUnitsConsumedThisPeriod == 0:
@@ -446,10 +460,14 @@ class Fox(Animal):
 
     def ReproduceThisPeriod(self):
         REPRODUCTION_PROBABILITY = 0.25
-        if random.randint(0, 100) < REPRODUCTION_PROBABILITY * 100:
-            return True
-        else:
+        if self.__Gender == Genders.Male:
             return False
+        else:
+
+            if random.randint(0, 100) < REPRODUCTION_PROBABILITY * 100:
+                return True
+            else:
+                return False
 
     def GiveFood(self, FoodUnits):
         self.__FoodUnitsConsumedThisPeriod = self.__FoodUnitsConsumedThisPeriod + FoodUnits
@@ -458,6 +476,11 @@ class Fox(Animal):
         super(Fox, self).Inspect()
         print("Food needed", self.__FoodUnitsNeeded, "", end="")
         print("Food eaten", self.__FoodUnitsConsumedThisPeriod, "", end="")
+        if self.__Gender == Genders.Female():
+            print("Gender: Female")
+        else:
+            print("Gender: Male")
+
         print()
 
 class Genders(enum.Enum):
@@ -467,12 +490,14 @@ class Genders(enum.Enum):
 
 #creates a class to represent the rabbits in the simulation with methods to age them
 class Rabbit(Animal):
-    def __init__(self, Variability, ParentsReproductionRate=1.2):
+    def __init__(self, Variability, ParentsReproductionRate=1.2, genderRatio = 50):
         self.__DEFAULT_LIFE_SPAN = 4
         self.__DEFAULT_PROBABILITY_DEATH_OTHER_CAUSES = 0.05
+                
         super(Rabbit, self).__init__(self.__DEFAULT_LIFE_SPAN, self.__DEFAULT_PROBABILITY_DEATH_OTHER_CAUSES, Variability)
+        
         self.__ReproductionRate = ParentsReproductionRate * self._CalculateRandomValue(100, Variability) / 100
-        if random.randint(0, 100) < 50:
+        if random.randint(0, 100) < genderRatio:
             self.__Gender = Genders.Male
         else:
             self.__Gender = Genders.Female
@@ -498,12 +523,13 @@ class Rabbit(Animal):
 #main method to run the simulation and display the main menu to the user to select the default or custom settings for the simulation
 def Main():
     MenuOption = 0
-    while MenuOption != 3:
+    while MenuOption != 4:
         print("Predator Prey Simulation Main Menu")
         print()
         print("1. Run simulation with default settings")
         print("2. Run simulation with custom settings")
-        print("3. Exit")
+        print("3. Rabbit paradise")
+        print("4. Exit")
         print()
         MenuOption = int(input("Select option: "))
         if MenuOption == 1 or MenuOption == 2:
@@ -513,13 +539,21 @@ def Main():
                 InitialFoxCount = 5
                 Variability = 0
                 FixedInitialLocations = True
+
             else:
                 LandscapeSize = int(input("Landscape Size: "))
                 InitialWarrenCount = int(input("Initial number of warrens: "))
                 InitialFoxCount = int(input("Initial number of foxes: "))
                 Variability = int(input("Randomness variability (percent): "))
                 FixedInitialLocations = False
-            Sim = Simulation(LandscapeSize, InitialWarrenCount, InitialFoxCount, Variability, FixedInitialLocations)
+            #Sim = Simulation(LandscapeSize, InitialWarrenCount, InitialFoxCount, Variability, FixedInitialLocations)
+        elif MenuOption == 3:
+            LandscapeSize = 20
+            InitialWarrenCount = 20
+            InitialFoxCount = 0
+            Variability = 1
+            FixedInitialLocations = False
+        Sim = Simulation(LandscapeSize, InitialWarrenCount, InitialFoxCount, Variability, FixedInitialLocations)
     input()
 
 if __name__ == "__main__":
