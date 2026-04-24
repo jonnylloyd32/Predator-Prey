@@ -12,6 +12,7 @@ class Location:
     def __init__(self):
         self.Fox = None
         self.Warren = None
+        self.Den = None
 
 #creates a class for universe in which the simulation takes place
 class Simulation:
@@ -86,6 +87,11 @@ class Simulation:
     # and animals for the new time period
     def __AdvanceTimePeriod(self):
         NewFoxCount = 0
+        if (self.__TimePeriod % 3 == 0):
+            x = random.randint(0, self.__LandscapeSize - 1)
+            y = random.randint(0, self.__LandscapeSize - 1)
+            self.__Landscape[x][y].Fox = Den.spawn(self.__Landscape[2][3].Den)
+            print("Fox spawned at" + str(x) + "," + str(y))
         if self.__ShowDetail:
             print()
         for x in range(0, self.__LandscapeSize):
@@ -144,6 +150,7 @@ class Simulation:
             for y in range(0, self.__LandscapeSize):
                 self.__Landscape[x][y] = Location()
 
+
         #if the user has selected to have fixed initial locations then the warrens and foxes
         #are created in predetermined locations otherwise they are created in random locations
 
@@ -159,6 +166,7 @@ class Simulation:
             self.__Landscape[8][6].Fox = Fox(self.__Variability)
             self.__Landscape[11][13].Fox = Fox(self.__Variability)
             self.__Landscape[12][4].Fox = Fox(self.__Variability)
+            self.__Landscape[3][2].Den = Den()
             self.__FoxCount = 5
         else:
             for w in range(0, InitialWarrenCount):
@@ -240,6 +248,8 @@ class Simulation:
                     print("  ", end="")
                 if not self.__Landscape[x][y].Fox is None:
                     print("F", end="")
+                elif self.__Landscape[x][y].Den is None:
+                    print(self.__Landscape[x][y].Den.getSymbol(), end = "")
                 else:
                     print(" ", end="")
                 print("|", end="")
@@ -295,6 +305,7 @@ class Warren:
                 self.__MateRabbits(ShowDetail)
         if self.__RabbitCount == 0 and ShowDetail:
             print("  All rabbits in warren are dead")
+
 
 
     #method handles the foxes eating rabbits in the warren based on how many rabbits are available
@@ -421,15 +432,17 @@ class Animal:
         return BaseValue - (BaseValue * Variability / 100) + (BaseValue * random.randint(0, Variability * 2) / 100)
 
 
-#creates a class to represent the foxes in the simulation with methods to age them
-#checks if they have died reproduce and eat rabbits
+# Creates a class to represent the foxes in the simulation with methods to age them
+# Checks if they have died reproduce and eat rabbits
 class Fox(Animal):
     def __init__(self, Variability):
         self.__DEFAULT_LIFE_SPAN = 7
         self.__DEFAULT_PROBABILITY_DEATH_OTHER_CAUSES = 0.1
-        super(Fox, self).__init__(self.__DEFAULT_LIFE_SPAN, self.__DEFAULT_PROBABILITY_DEATH_OTHER_CAUSES, Variability)
+        self.__TotalDeadFoxes = 0
+        super(Fox, self).__init__(self.__DEFAULT_LIFE_SPAN, self.__DEFAULT_PROBABILITY_DEATH_OTHER_CAUSES, Variability, self.__TotalDeadFoxes)
         self.__FoodUnitsNeeded = int(10 * self._CalculateRandomValue(100, Variability) / 100)
         self.__FoodUnitsConsumedThisPeriod = 0
+        
         if random.randint(0, 100) < 33:
             self.__Gender = Genders.Male
         else:
@@ -476,7 +489,7 @@ class Fox(Animal):
         super(Fox, self).Inspect()
         print("Food needed", self.__FoodUnitsNeeded, "", end="")
         print("Food eaten", self.__FoodUnitsConsumedThisPeriod, "", end="")
-        if self.__Gender == Genders.Female():
+        if self.__Gender == Genders.Female:
             print("Gender: Female")
         else:
             print("Gender: Male")
@@ -518,6 +531,35 @@ class Rabbit(Animal):
 
     def GetReproductionRate(self):
         return self.__ReproductionRate
+
+
+# Question 6: 
+#class giantWarren(Warren):
+#    def __init__(self, variability, RabbitCount = 30):
+#        self.__MAX_RABBITS_IN_WARREN = 200
+#        super()
+#        self.__RabbitCount = RabbitCount
+
+class Den():
+    def __init__(self):
+        self.foxes = 0
+        def spawn(self):
+            self.__foxes += 1
+            return Fox(50)
+        def getSymbol(self):
+            return("D" + str(self.foxes))
+
+
+
+    def ReproduceInDen(self):
+        if self.__TimePeriod % 3 == 0:
+            FoxCount += 1             
+        return self.__FoxCount
+
+
+
+
+
 
 
 #main method to run the simulation and display the main menu to the user to select the default or custom settings for the simulation
