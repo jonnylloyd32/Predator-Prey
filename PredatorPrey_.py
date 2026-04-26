@@ -51,7 +51,7 @@ class Simulation:
             if MenuOption == 0:
 
                 self.__TimePeriod += 10
-                self.show__detail = False
+                self.show__Detail = False
                 for i in range(10):
                     self.__AdvanceTimePeriod()
                     
@@ -155,6 +155,7 @@ class Simulation:
         #are created in predetermined locations otherwise they are created in random locations
 
         if FixedInitialLocations:
+            self.__Landscape[10][4].Warren = giantWarren(self.__Variability, 90)
             self.__Landscape[1][1].Warren = Warren(self.__Variability, 38)
             self.__Landscape[2][8].Warren = Warren(self.__Variability, 80)
             self.__Landscape[9][7].Warren = Warren(self.__Variability, 20)
@@ -248,7 +249,7 @@ class Simulation:
                     print("  ", end="")
                 if not self.__Landscape[x][y].Fox is None:
                     print("F", end="")
-                elif self.__Landscape[x][y].Den is None:
+                elif self.__Landscape[x][y].Den is not None:
                     print(self.__Landscape[x][y].Den.getSymbol(), end = "")
                 else:
                     print(" ", end="")
@@ -269,8 +270,13 @@ class Warren:
             self.__Rabbits.append(None)
         if self.__RabbitCount == 0:
             self.__RabbitCount = int(self.__CalculateRandomValue(int(self.__MAX_RABBITS_IN_WARREN / 4), self.__Variability))
+
         for r in range(0, self.__RabbitCount):
             self.__Rabbits[r] = Rabbit(self.__Variability)
+
+
+    def SetMaxCapacity(self, value):
+        self.__MAX_RABBITS_IN_WARREN = value
 
     #creates a random value based on the base value and the variability
     #percentage to allow for differences in the rabbits and foxes created
@@ -439,7 +445,7 @@ class Fox(Animal):
         self.__DEFAULT_LIFE_SPAN = 7
         self.__DEFAULT_PROBABILITY_DEATH_OTHER_CAUSES = 0.1
         self.__TotalDeadFoxes = 0
-        super(Fox, self).__init__(self.__DEFAULT_LIFE_SPAN, self.__DEFAULT_PROBABILITY_DEATH_OTHER_CAUSES, Variability, self.__TotalDeadFoxes)
+        super(Fox, self).__init__(self.__DEFAULT_LIFE_SPAN, self.__DEFAULT_PROBABILITY_DEATH_OTHER_CAUSES, Variability)
         self.__FoodUnitsNeeded = int(10 * self._CalculateRandomValue(100, Variability) / 100)
         self.__FoodUnitsConsumedThisPeriod = 0
         
@@ -534,20 +540,29 @@ class Rabbit(Animal):
 
 
 # Question 6: 
-#class giantWarren(Warren):
-#    def __init__(self, variability, RabbitCount = 30):
-#        self.__MAX_RABBITS_IN_WARREN = 200
-#        super()
-#        self.__RabbitCount = RabbitCount
+class giantWarren(Warren):
+    def __init__(self, Variability, RabbitCount = 50):
+        super().__init__(Variability, RabbitCount)
+        self.SetMaxCapacity(200)
+
+    def NeedToCreateNewWarren(self):
+        if self.GetRabbitCount() == 200:
+            return True
+        else: 
+            return False
+
+
 
 class Den():
     def __init__(self):
         self.foxes = 0
-        def spawn(self):
-            self.__foxes += 1
-            return Fox(50)
-        def getSymbol(self):
-            return("D" + str(self.foxes))
+
+    def spawn(self):
+        self.__foxes += 1
+        return Fox(50)
+
+    def getSymbol(self):
+        return("D" + str(self.foxes))
 
 
 
