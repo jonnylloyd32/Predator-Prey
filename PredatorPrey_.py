@@ -6,6 +6,7 @@
 import enum
 import random
 import math
+from re import X
 
 #creates a class to represent each location which may contain a warren or fox
 class Location:
@@ -45,13 +46,13 @@ class Simulation:
             print("3. Inspect fox")
             print("4. Inspect warren")
             print("5. Exit")
+            print("6. Find biggest warren")
             print()
             #takes the users menu option selection and calls the appropriate method
             MenuOption = int(input("Select option: "))
             if MenuOption == 0:
-
                 self.__TimePeriod += 10
-                self.show__Detail = False
+                self.__ShowDetail = False
                 for i in range(10):
                     self.__AdvanceTimePeriod()
                     
@@ -76,11 +77,30 @@ class Simulation:
                     self.__ViewRabbits = input("View individual rabbits (y/n)? ")
                     if self.__ViewRabbits == "y":
                         self.__Landscape[x][y].Warren.ListRabbits()
+            elif MenuOption == 6:
+                self.findBiggest()
         input()
     #takes the coordinate input from the user and returns it for use in other methods
     def __InputCoordinate(self, CoordinateName):
         Coordinate = int(input("  Input " + CoordinateName + " coordinate:"))
         return Coordinate
+
+
+
+    def findBiggest(self):
+        maxRabbitCount = 0
+        coords = None
+        for x in range(0, self.__LandscapeSize):
+            for y in range(0, self.__LandscapeSize):
+                if self.__Landscape[x][y].Warren:
+                    maxRabbitCount = Warren.GetRabbitCount(self)
+                    coords = (x, y)
+        if coords is not None:
+            x, y = coords
+            print("biggest warren at (" + str(x) + "," + str(y) + ") with " + str(maxRabbitCount) + "rabbits")
+        else: 
+            print("No warrens in the grid")
+
 
     #when the user selects to advance the time period this method 
     #is called to carry out all the necessary changes to the landscape
@@ -143,6 +163,10 @@ class Simulation:
             input()
         self.__DrawLandscape()
         print()
+
+
+
+
 
     #this method is called when the simulation is first created to populate the landscape with the initial warrens and foxes
     def __CreateLandscapeAndAnimals(self, InitialWarrenCount, InitialFoxCount, FixedInitialLocations):
@@ -558,7 +582,7 @@ class Den():
         self.foxes = 0
 
     def spawn(self):
-        self.__foxes += 1
+        self.foxes += 1
         return Fox(50)
 
     def getSymbol(self):
