@@ -7,6 +7,7 @@ import enum
 import random
 import math
 from re import X
+from tkinter import Menu
 
 #creates a class to represent each location which may contain a warren or fox
 class Location:
@@ -21,6 +22,7 @@ class Simulation:
         self.__ViewRabbits = ""
         self.__TimePeriod = 0
         self.__WarrenCount = 0
+        self.__maxRabbitCount = 0
         self.__FoxCount = 0
         self.__ShowDetail = False
         self.__LandscapeSize = LandscapeSize
@@ -47,6 +49,7 @@ class Simulation:
             print("4. Inspect warren")
             print("5. Exit")
             print("6. Find biggest warren")
+            print("7.  Inspect all rabbits ")
             print()
             #takes the users menu option selection and calls the appropriate method
             MenuOption = int(input("Select option: "))
@@ -79,6 +82,9 @@ class Simulation:
                         self.__Landscape[x][y].Warren.ListRabbits()
             elif MenuOption == 6:
                 self.findBiggest()
+
+            elif MenuOption == 7:
+                self.inspectAllRabbits()
         input()
     #takes the coordinate input from the user and returns it for use in other methods
     def __InputCoordinate(self, CoordinateName):
@@ -86,17 +92,26 @@ class Simulation:
         return Coordinate
 
 
+    def inspectAllRabbits(self):
+        for x in range(0, self.__LandscapeSize):
+            for y in range(0, self.__LandscapeSize):
+                if not self.__Landscape[x][y].Warren is None:
+                    Warren.ListRabbits()
+                    
+                    Rabbit.getAge()
+
+
 
     def findBiggest(self):
         maxRabbitCount = 0
-        coords = None
+        
         for x in range(0, self.__LandscapeSize):
             for y in range(0, self.__LandscapeSize):
                 if self.__Landscape[x][y].Warren:
                     maxRabbitCount = Warren.GetRabbitCount(self)
                     coords = (x, y)
         if coords is not None:
-            x, y = coords
+            
             print("biggest warren at (" + str(x) + "," + str(y) + ") with " + str(maxRabbitCount) + "rabbits")
         else: 
             print("No warrens in the grid")
@@ -278,7 +293,15 @@ class Simulation:
                 else:
                     print(" ", end="")
                 print("|", end="")
+
+        
             print()
+        print("The average life expectancy of a fox stands at" + str(Fox.getLifeExpect))
+
+
+
+ 
+       
 
 #creates a class to represent a warren which contains rabbits and has methods to age the rabbits
 #allow them to reproduce, and be eaten by foxes
@@ -423,6 +446,7 @@ class Warren:
                 self.__Rabbits[r].Inspect()
 
 
+
 #creates a class to represent the rabbits and foxes in the simulation with methods to age them
 #checks if they have died and reproduce if necessary
 class Animal:
@@ -465,6 +489,9 @@ class Animal:
 # Creates a class to represent the foxes in the simulation with methods to age them
 # Checks if they have died reproduce and eat rabbits
 class Fox(Animal):
+    __TotalDeadFoxes = 0
+    __TotalFoxAge = 0
+
     def __init__(self, Variability):
         self.__DEFAULT_LIFE_SPAN = 7
         self.__DEFAULT_PROBABILITY_DEATH_OTHER_CAUSES = 0.1
@@ -478,25 +505,32 @@ class Fox(Animal):
         else:
             self.__Gender = Genders.Female
 
-    def AdvanceGeneration(self, ShowDetail):
-        if self.__FoodUnitsConsumedThisPeriod == 0:
-            self._IsAlive = False
-            if ShowDetail:
-                print("  Fox dies as has eaten no food this period.")
-        else:
-            if self.CheckIfKilledByOtherFactor():
-                self._IsAlive = False
-                if ShowDetail:
-                    print("  Fox killed by other factor.")
-            else:
-                if self.__FoodUnitsConsumedThisPeriod < self.__FoodUnitsNeeded:
-                    self.CalculateNewAge()
-                    if ShowDetail:
-                        print("  Fox ages further due to lack of food.")
-                self.CalculateNewAge()
-                if not self._IsAlive:
-                    if ShowDetail:
-                        print("  Fox has died of old age.")
+    def AdvanceGeneration(self, ShowDetail): 
+        if self.__FoodUnitsConsumedThisPeriod == 0: 
+            self._IsAlive = False 
+            Fox.__TotalDeadFoxes += 1 
+            Fox.__TotalFoxAge += self._Age
+            if ShowDetail: 
+                print("  Fox dies as it could not aquire food this period.") 
+            else: 
+                if self.CheckIfKilledByOtherFactor(): 
+                    self._IsAlive = False 
+                    Fox.__TotalDeadFoxes += 1 
+                    Fox.__TotalFoxAge += self._Age 
+                    if ShowDetail: 
+                        print("  Fox killed by other factor.") 
+                else: 
+                    if self.__FoodUnitsConsumedThisPeriod < self.__FoodUnitsNeeded: 
+                         self.CalculateNewAge() 
+                         if ShowDetail: 
+                             print("  Fox ages further due to lack of food.") 
+                self.CalculateNewAge() 
+                if not self._IsAlive: 
+                    Fox.__TotalDeadFoxes += 1 
+                    Fox.__TotalFoxAge += self._Age 
+                    if ShowDetail: 
+                         print("  Fox has died of old age.") 
+ 
 
     def ResetFoodConsumed(self):
         self.__FoodUnitsConsumedThisPeriod = 0
@@ -525,6 +559,16 @@ class Fox(Animal):
             print("Gender: Male")
 
         print()
+
+    def getLifeExpect(self): 
+        if Fox.__TotalDeadFoxes > 0: 
+            LifeExpect = float(Fox.__TotalFoxAge // Fox.__TotalDeadFoxes)
+            return LifeExpect
+        else: 
+            return self.__DEFAULT_LIFE_SPAN
+
+
+
 
 class Genders(enum.Enum):
     Male = 1
@@ -561,6 +605,15 @@ class Rabbit(Animal):
 
     def GetReproductionRate(self):
         return self.__ReproductionRate
+
+    def CalculateNewAge(self):
+        self._Age += 1
+        if self._Age >= self._NaturalLifespan:
+            self._IsAlive = False
+        self.__ProbabilityOfDeathOtherCauses += 0.1
+
+    def getAge(self):
+        return self.Age
 
 
 # Question 6: 
@@ -639,3 +692,7 @@ def Main():
 
 if __name__ == "__main__":
     Main()
+
+
+    
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
