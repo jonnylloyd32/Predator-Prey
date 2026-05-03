@@ -1,16 +1,18 @@
-#Skeleton Program code for the AQA A Level Paper 1 2017 examination
-#this code should be used in conjunction with the Preliminary Material
-#written by the AQA Programmer Team
-#developed in the Python 3.4.1 programming environment
+# Skeleton Program code for the AQA A Level Paper 1 2017 examination
+# this code should be used in conjunction with the Preliminary Material
+# written by the AQA Programmer Team
+# developed in the Python 3.4.1 programming environment
 
 import enum
 import random
 import math
 
+
 class Location:
     def __init__(self):
         self.Fox = None
         self.Warren = None
+
 
 class Simulation:
     def __init__(self, LandscapeSize, InitialWarrenCount, InitialFoxCount, Variability, FixedInitialLocations):
@@ -22,15 +24,22 @@ class Simulation:
         self.__LandscapeSize = LandscapeSize
         self.__Variability = Variability
         self.__FixedInitialLocations = FixedInitialLocations
+
         self.__Landscape = []
         for Count1 in range(self.__LandscapeSize):
             LandscapeRow = []
             for Count2 in range(self.__LandscapeSize):
-                LandscapeLocation = None
-                LandscapeRow.append(LandscapeLocation)
+                LandscapeRow.append(None)
             self.__Landscape.append(LandscapeRow)
-        self.__CreateLandscapeAndAnimals(InitialWarrenCount, InitialFoxCount, self.__FixedInitialLocations)
+
+        self.__CreateLandscapeAndAnimals(
+            InitialWarrenCount,
+            InitialFoxCount,
+            self.__FixedInitialLocations
+        )
+
         self.__DrawLandscape()
+
         MenuOption = 0
         while (self.__WarrenCount > 0 or self.__FoxCount > 0) and MenuOption != 5:
             print()
@@ -40,20 +49,25 @@ class Simulation:
             print("4. Inspect warren")
             print("5. Exit")
             print()
+
             MenuOption = int(input("Select option: "))
+
             if MenuOption == 1:
                 self.__TimePeriod += 1
                 self.__ShowDetail = True
                 self.__AdvanceTimePeriod()
+
             if MenuOption == 2:
                 self.__TimePeriod += 1
                 self.__ShowDetail = False
                 self.__AdvanceTimePeriod()
+
             if MenuOption == 3:
                 x = self.__InputCoordinate("x")
                 y = self.__InputCoordinate("y")
                 if not self.__Landscape[x][y].Fox is None:
                     self.__Landscape[x][y].Fox.Inspect()
+
             if MenuOption == 4:
                 x = self.__InputCoordinate("x")
                 y = self.__InputCoordinate("y")
@@ -62,41 +76,52 @@ class Simulation:
                     self.__ViewRabbits = input("View individual rabbits (y/n)? ")
                     if self.__ViewRabbits == "y":
                         self.__Landscape[x][y].Warren.ListRabbits()
+
         input()
 
     def __InputCoordinate(self, CoordinateName):
-        Coordinate = int(input("  Input " + CoordinateName + " coordinate:"))
-        return Coordinate
+        return int(input("  Input " + CoordinateName + " coordinate:"))
 
     def __AdvanceTimePeriod(self):
         NewFoxCount = 0
         if self.__ShowDetail:
             print()
-        for x in range(0, self.__LandscapeSize):
-            for y in range(0, self.__LandscapeSize):
+
+        for x in range(self.__LandscapeSize):
+            for y in range(self.__LandscapeSize):
+
                 if not self.__Landscape[x][y].Warren is None:
                     if self.__ShowDetail:
                         print("Warren at (", x, ",", y, "):", sep="")
                         print("  Period Start: ", end="")
                         self.__Landscape[x][y].Warren.Inspect()
+
                     if self.__FoxCount > 0:
                         self.__FoxesEatRabbitsInWarren(x, y)
+
                     if self.__Landscape[x][y].Warren.NeedToCreateNewWarren():
                         self.__CreateNewWarren()
+
                     self.__Landscape[x][y].Warren.AdvanceGeneration(self.__ShowDetail)
+
                     if self.__ShowDetail:
                         print("  Period End: ", end="")
                         self.__Landscape[x][y].Warren.Inspect()
                         input()
+
                     if self.__Landscape[x][y].Warren.WarrenHasDiedOut():
                         self.__Landscape[x][y].Warren = None
                         self.__WarrenCount -= 1
-        for x in range(0, self.__LandscapeSize):
-            for y in range(0, self.__LandscapeSize):
+
+        for x in range(self.__LandscapeSize):
+            for y in range(self.__LandscapeSize):
+
                 if not self.__Landscape[x][y].Fox is None:
                     if self.__ShowDetail:
                         print("Fox at (", x, ",", y, "): ", sep="")
+
                     self.__Landscape[x][y].Fox.AdvanceGeneration(self.__ShowDetail)
+
                     if self.__Landscape[x][y].Fox.CheckIfDead():
                         self.__Landscape[x][y].Fox = None
                         self.__FoxCount -= 1
@@ -105,23 +130,29 @@ class Simulation:
                             if self.__ShowDetail:
                                 print("  Fox has reproduced. ")
                             NewFoxCount += 1
+
                         if self.__ShowDetail:
                             self.__Landscape[x][y].Fox.Inspect()
+
                         self.__Landscape[x][y].Fox.ResetFoodConsumed()
+
         if NewFoxCount > 0:
             if self.__ShowDetail:
                 print("New foxes born: ")
-            for f in range(0, NewFoxCount):
+            for _ in range(NewFoxCount):
                 self.__CreateNewFox()
+
         if self.__ShowDetail:
             input()
+
         self.__DrawLandscape()
         print()
 
     def __CreateLandscapeAndAnimals(self, InitialWarrenCount, InitialFoxCount, FixedInitialLocations):
-        for x in range(0, self.__LandscapeSize):
-            for y in range(0, self.__LandscapeSize):
+        for x in range(self.__LandscapeSize):
+            for y in range(self.__LandscapeSize):
                 self.__Landscape[x][y] = Location()
+
         if FixedInitialLocations:
             self.__Landscape[1][1].Warren = Warren(self.__Variability, 38)
             self.__Landscape[2][8].Warren = Warren(self.__Variability, 80)
@@ -129,6 +160,7 @@ class Simulation:
             self.__Landscape[10][3].Warren = Warren(self.__Variability, 52)
             self.__Landscape[13][4].Warren = Warren(self.__Variability, 67)
             self.__WarrenCount = 5
+
             self.__Landscape[2][10].Fox = Fox(self.__Variability)
             self.__Landscape[6][1].Fox = Fox(self.__Variability)
             self.__Landscape[8][6].Fox = Fox(self.__Variability)
@@ -136,29 +168,95 @@ class Simulation:
             self.__Landscape[12][4].Fox = Fox(self.__Variability)
             self.__FoxCount = 5
         else:
-            for w in range(0, InitialWarrenCount):
+            for _ in range(InitialWarrenCount):
                 self.__CreateNewWarren()
-            for f in range(0, InitialFoxCount):
+            for _ in range(InitialFoxCount):
                 self.__CreateNewFox()
 
     def __CreateNewWarren(self):
         x = random.randint(0, self.__LandscapeSize - 1)
         y = random.randint(0, self.__LandscapeSize - 1)
+
         while not self.__Landscape[x][y].Warren is None:
             x = random.randint(0, self.__LandscapeSize - 1)
             y = random.randint(0, self.__LandscapeSize - 1)
+
         if self.__ShowDetail:
             print("New Warren at (", x, ",", y, ")", sep="")
+
         self.__Landscape[x][y].Warren = Warren(self.__Variability)
         self.__WarrenCount += 1
 
     def __CreateNewFox(self):
         x = random.randint(0, self.__LandscapeSize - 1)
         y = random.randint(0, self.__LandscapeSize - 1)
+
         while not self.__Landscape[x][y].Fox is None:
             x = random.randint(0, self.__LandscapeSize - 1)
             y = random.randint(0, self.__LandscapeSize - 1)
+
         if self.__ShowDetail:
             print("  New Fox at (", x, ",", y, ")", sep="")
+
         self.__Landscape[x][y].Fox = Fox(self.__Variability)
         self.__FoxCount += 1
+
+    def __FoxesEatRabbitsInWarren(self, WarrenX, WarrenY):
+        RabbitCountAtStart = self.__Landscape[WarrenX][WarrenY].Warren.GetRabbitCount()
+
+        for FoxX in range(self.__LandscapeSize):
+            for FoxY in range(self.__LandscapeSize):
+
+                if not self.__Landscape[FoxX][FoxY].Fox is None:
+                    Dist = self.__DistanceBetween(FoxX, FoxY, WarrenX, WarrenY)
+
+                    if Dist <= 3.5:
+                        PercentToEat = 20
+                    elif Dist <= 7:
+                        PercentToEat = 10
+                    else:
+                        PercentToEat = 0
+
+                    RabbitsToEat = int(round(PercentToEat * RabbitCountAtStart / 100))
+                    FoodConsumed = self.__Landscape[WarrenX][WarrenY].Warren.EatRabbits(RabbitsToEat)
+                    self.__Landscape[FoxX][FoxY].Fox.GiveFood(FoodConsumed)
+
+    def __DistanceBetween(self, x1, y1, x2, y2):
+        return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+
+    def __DrawLandscape(self):
+        print()
+        print("TIME PERIOD:", self.__TimePeriod)
+        print()
+
+        print("   ", end="")
+        for x in range(self.__LandscapeSize):
+            print(f"{x:2}|", end="")
+        print()
+
+        for y in range(self.__LandscapeSize):
+            print(f"{y:2}|", end="")
+            for x in range(self.__LandscapeSize):
+                if not self.__Landscape[x][y].Warren is None:
+                    count = self.__Landscape[x][y].Warren.GetRabbitCount()
+                    print(f"{count:2}", end="")
+                else:
+                    print("  ", end="")
+
+                print("F" if not self.__Landscape[x][y].Fox is None else " ", end="|")
+            print()
+
+
+class Location:
+    def __init__(self):
+        self.Fox = None
+        self.Warren = None
+
+
+class Genders(enum.Enum):
+    Male = 1
+    Female = 2
+
+if __name__ == "__main__": 
+    Main() 
+
