@@ -1,179 +1,90 @@
- 
-
 import enum 
-
 import random 
-
 import math 
-
  
-
 class Location: 
-
   def __init__(self): 
-
     self.Fox = None 
-
     self.Warren = None 
 
- 
-
 class Simulation: 
-
   def __init__(self, LandscapeSize, InitialWarrenCount, InitialFoxCount, Variability, FixedInitialLocations): 
-
     self.__ViewRabbits = "" 
-
     self.__TimePeriod = 0 
-
     self.__WarrenCount = 0 
-
     self.__FoxCount = 0 
-
     self.__ShowDetail = False 
-
     self.__LandscapeSize = LandscapeSize 
-
     self.__Variability = Variability 
-
     self.__FixedInitialLocations = FixedInitialLocations 
-
     self.__Landscape = [] 
-
     for Count1 in range (self.__LandscapeSize): 
-
       LandscapeRow = [] 
-
       for Count2 in range (self.__LandscapeSize): 
-
         LandscapeLocation = None 
-
         LandscapeRow.append(LandscapeLocation) 
-
       self.__Landscape.append(LandscapeRow) 
-
     self.__CreateLandscapeAndAnimals(InitialWarrenCount, InitialFoxCount, self.__FixedInitialLocations) 
-
     self.__DrawLandscape() 
-
     MenuOption = 0 
-
     while (self.__WarrenCount > 0 or self.__FoxCount > 0) and MenuOption != 5: 
-
       print() 
-
       print("1. Advance to next time period showing detail") 
-
       print("2. Advance to next time period hiding detail") 
-
       print("3. Inspect fox") 
-
       print("4. Inspect warren") 
-
       print("5. Exit") 
-
       print() 
-
       MenuOption = int(input("Select option: ")) 
-
       if MenuOption == 1: 
-
         self.__TimePeriod += 1 
-
         self.__ShowDetail = True 
-
         self.__AdvanceTimePeriod() 
-
       if MenuOption == 2: 
-
         self.__TimePeriod += 1 
-
         self.__ShowDetail = False 
-
         self.__AdvanceTimePeriod() 
-
       if MenuOption == 3: 
-
         x = self.__InputCoordinate("x") 
-
         y = self.__InputCoordinate("y") 
-
         if not self.__Landscape[x][y].Fox is None: 
-
           self.__Landscape[x][y].Fox.Inspect() 
-
       if MenuOption == 4: 
-
         x = self.__InputCoordinate("x") 
-
         y = self.__InputCoordinate("y") 
-
         if not self.__Landscape[x][y].Warren is None: 
-
           self.__Landscape[x][y].Warren.Inspect() 
-
           self.__ViewRabbits = input("View individual rabbits (y/n)? ") 
-
           if self.__ViewRabbits == "y": 
-
             self.__Landscape[x][y].Warren.ListRabbits() 
-
     input() 
-
      
-
   def __InputCoordinate(self, CoordinateName): 
-
     Coordinate = int(input("  Input " + CoordinateName + " coordinate:")) 
-
     return Coordinate 
-
    
-
   def __AdvanceTimePeriod(self): 
-
     NewFoxCount = 0 
-
     if self.__ShowDetail: 
-
       print() 
-
     for x in range (0, self.__LandscapeSize): 
-
       for y in range (0, self.__LandscapeSize): 
-
         if not self.__Landscape[x][y].Warren is None: 
-
           if self.__ShowDetail: 
-
             print("Warren at (", x, ",", y, "):", sep = "") 
-
             print("  Period Start: ", end = "") 
-
             self.__Landscape[x][y].Warren.Inspect() 
-
           if self.__FoxCount > 0: 
-
             self.__FoxesEatRabbitsInWarren(x, y) 
-
           if self.__Landscape[x][y].Warren.NeedToCreateNewWarren(): 
-
             self.__CreateNewWarren() 
-
           self.__Landscape[x][y].Warren.AdvanceGeneration(self.__ShowDetail) 
-
           if self.__ShowDetail: 
-
             print("  Period End: ", end = "") 
-
             self.__Landscape[x][y].Warren.Inspect() 
-
             input() 
-
           if self.__Landscape[x][y].Warren.WarrenHasDiedOut(): 
-
             self.__Landscape[x][y].Warren = None 
-
             self.__WarrenCount -= 1 
 
     for x in range (0, self.__LandscapeSize): 
