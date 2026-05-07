@@ -29,12 +29,16 @@ class Simulation:
 
     #task12
     self.WarrenGraph = WarrenGraph()
-    MyNode: Node = Node(1,1,2,8,9,7)
+
+    MyNode = Node(1,1,2,8,9,7)
     self.WarrenGraph.addNode(MyNode)
+
     MyNode = Node(2,8,13,4,1,1)
     self.WarrenGraph.addNode(MyNode)
+
     MyNode = Node(9,7,1,1,13,4)
     self.WarrenGraph.addNode(MyNode)
+
     MyNode = Node(13,4,9,7,2,8)
     self.WarrenGraph.addNode(MyNode)
 
@@ -76,7 +80,7 @@ class Simulation:
             self.__Landscape[x][y].Warren.ListRabbits() 
 
       elif MenuOption == 8:
-          self.WarrenGraph
+          self.WarrenGraph.adjList()
     input() 
      
 
@@ -507,7 +511,7 @@ class WarrenGraph():
         
     def adjList(self):
         for Node in (self.Nodes):
-            print(Node.getCoord("s"), ":" , Node.getCoord("l"), ",", Node.getCoord("r"))
+            print(Node.getCoords("s"), ":" , Node.getCoords("l"), ",", Node.getCoords("r"))
 
 
 
