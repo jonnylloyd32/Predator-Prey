@@ -237,7 +237,7 @@ class Warren:
       self.__AlreadySpread = True 
       return True 
 
-   else: 
+    else: 
       return False 
      
   def WarrenHasDiedOut(self): 
@@ -463,7 +463,7 @@ def Main():
       if MenuOption == 1: 
         LandscapeSize = 15 
 
-       InitialWarrenCount = 5 
+        InitialWarrenCount = 5 
         InitialFoxCount = 5 
         Variability = 0 
         FixedInitialLocations = True 
