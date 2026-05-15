@@ -536,17 +536,13 @@ class WarrenGraph():
                         Coords = Node.getCoords("l")
                     else:
                         Coords = Node.getCoords("r")
-                    row += str(self.getActualDistance(Coords[0], Coords[1]))
-                    row += "\t"
+                    x1, y1 = Node.getCoords("s")
+                    x2, y2 = Coords
+                    dist = math.sqrt((pow(x1 - x2, 2) + pow(y1 - y2, 2)))
+                    row += f"{round(dist, 1)}\t"
+                else:
+                    row += "0\t"
                 print(row)
-
-
-    def getActualDistance(self, node1, node2):
-        diffX = node1.selfX - node2.selfX
-        diffY = node1.selfY - node2.selfY
-        actualDistance = math.sqrt((diffX**2) + (diffY**2))
-        actualDistance = math.round(actualDistance, 1)
-        return actualDistance
 
 
 
